@@ -1,8 +1,22 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
 @theme {
   --color-modeLight1 : #121063;
   --color-modeLight2: #3ab7bf;
   --color-modeDark1: #1a202c;
   --color-modeDark2: #78dcca;
+}
+
+@theme inline {
+  --animate-background-position-spin : background-position-spin 3000ms infinite alternate;
+  @keyframes background-position-spin {
+  0% {
+    background-position : top center;
+    }
+  100% {
+    background-position : bottom center;
+    }
+  }
 }
