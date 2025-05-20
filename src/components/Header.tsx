@@ -8,7 +8,7 @@ const links = [
 export default function Header() {
   return (
     <header>
-      <div className="flex items-center justify-between p-4 bg-blue-300">
+      <div className="flex items-center justify-between p-4 bg-rose-50">
         <div className="ml-10 flex items-center space-x-4">
           <Link href="/" legacyBehavior>
             <a className="flex items-center space-x-2">
