@@ -6,6 +6,8 @@ import "leaflet/dist/leaflet.css";
 import { useEffect, useState, useRef } from "react";
 import { getAirports } from "@/services/airports_tew";
 import L from "leaflet";
+import ReactDOM from "react-dom/client";
+
 
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import 'leaflet-routing-machine';
@@ -22,14 +24,10 @@ import FullscreenControl from "./FullScreenControl";
 import MiniMapControl from "./MiniMapControl";
 
 import {
-  LayerGroup,
   useMap,
-  TileLayer,
   ScaleControl,
-  WMSTileLayer,
   MapContainer as LeafletMapContainer,
 } from "react-leaflet";
-import ReactDOM from "react-dom";
 
 const TileLayerDynamic = dynamic(() => import("react-leaflet").then((mod) => mod.TileLayer), { ssr: false });
 
@@ -61,6 +59,8 @@ function MapListener({ onMapReady }: { onMapReady: (map: L.Map) => void }) {
 const Map = ({ className }: MapProps) => {
   const [geoJsonData, setGeoJsonData] = useState<any>(null);
   const [userPosition, setUserPosition] = useState<L.LatLngExpression | null>(null);
+  const [showClusters, setShowClusters] = useState(true);
+
   const mapRef = useRef<L.Map | null>(null);
   //@ts-ignore
   const markerClusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
@@ -165,6 +165,7 @@ const Map = ({ className }: MapProps) => {
 
         //@ts-ignore
         const root = ReactDOM.createRoot(popupContainer);
+
         root.render(
           <div style={{ maxWidth: "200px" }}>
             <h3 style={{ fontWeight: "bold", marginBottom: "4px" }}>
@@ -244,6 +245,7 @@ const Map = ({ className }: MapProps) => {
     fetchAirports();
   }, []);
 
+
   useEffect(() => {
     if (!mapRef.current) return;
     const map = mapRef.current;
@@ -292,27 +294,41 @@ const Map = ({ className }: MapProps) => {
 
     baseLayers["OpenStreetMap"].addTo(map);
 
-    
     if (markerClusterGroupRef.current) {
       markerClusterGroupRef.current.clearLayers();
       map.removeLayer(markerClusterGroupRef.current);
       markerClusterGroupRef.current = null;
     }
-    
 
+    if (!geoJsonData) return;
 
-    if (geoJsonData) {
-      const markers = createMarkers();
-      markers.forEach(marker => overlays["Aeropuertos (Clusters)"].addLayer(marker));
-    }
+    const searchLayer = L.layerGroup();
+
+    const markers = createMarkers();
+
+    markers.forEach(marker => {
+      overlays["Aeropuertos (Clusters)"].addLayer(marker);
+      searchLayer.addLayer(marker);
+    });
 
     overlays["Aeropuertos (Clusters)"].addTo(map);
+    searchLayer.addTo(map);
+
+    //@ts-ignore
+    const searchControl = new L.Control.Search({
+      layer: searchLayer,
+      propertyName: "title", // importante que el título esté en options.title del marker
+      zoom: 12,
+      marker: false, // para no duplicar marcador al buscar
+      textPlaceholder: "Buscar aeropuerto...",
+    });
+    map.addControl(searchControl);
 
     const control = L.control.layers(baseLayers, overlays, { collapsed: false }).addTo(map);
 
     map.on("overlayadd", (e: any) => {
       if (e.name === "Aeropuertos (Clusters)") {
-        // @ts-ignore
+        //@ts-ignore
         setShowClusters(true);
       }
     });
@@ -326,6 +342,7 @@ const Map = ({ className }: MapProps) => {
     mapRef.current = map;
 
     return () => {
+      map.removeControl(searchControl);
       control.remove();
       Object.values(overlays).forEach(layer => {
         if (map.hasLayer(layer)) map.removeLayer(layer);
@@ -335,6 +352,7 @@ const Map = ({ className }: MapProps) => {
       });
     };
   }, [geoJsonData]);
+
 
   return (
     <>
