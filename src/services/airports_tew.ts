@@ -18,7 +18,6 @@ export const getAirports = async (
     };
 
     const urlParams = new URLSearchParams(params).toString();
-    console.log("GeoServer WFS URL:", `${GEOSERVER_BASE_URL}?${urlParams}`);
 
     const response = await axios.get(GEOSERVER_BASE_URL, { params });
 

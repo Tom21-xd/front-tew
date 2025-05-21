@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FaUser, FaEnvelope, FaLock, FaPhone } from "react-icons/fa";
 import axios from "axios";
 import gsap from "gsap";
+import { Meteors } from "@/components/magicui/meteors";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -22,7 +23,6 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Animación inicial de aparición (form y sus elementos)
   useEffect(() => {
     if (formRef.current) {
       const ctx = gsap.context(() => {
@@ -38,7 +38,6 @@ export default function RegisterPage() {
     }
   }, []);
 
-  // Animación foco inputs (borde + icono)
   useEffect(() => {
     inputRefs.current.forEach((input) => {
       if (!input) return;
@@ -62,7 +61,6 @@ export default function RegisterPage() {
       input.addEventListener("focus", handleFocus);
       input.addEventListener("blur", handleBlur);
 
-      // Cleanup listeners on unmount
       return () => {
         input.removeEventListener("focus", handleFocus);
         input.removeEventListener("blur", handleBlur);
@@ -91,7 +89,6 @@ export default function RegisterPage() {
     }
 
     try {
-      // Envía sólo los campos que tu backend espera recibir
       const postData = {
         nombre_usuario: formData.nombre_usuario,
         correo_usuario: formData.correo_usuario,
@@ -99,7 +96,10 @@ export default function RegisterPage() {
         telefono_usuario: formData.telefono_usuario || null,
       };
 
-      const response = await axios.post('http://localhost:4000/auth/register', postData);
+      const response = await axios.post(
+        "http://localhost:4000/auth/register",
+        postData
+      );
 
       if (response.status === 201 || response.status === 200) {
         setSuccess("Registro exitoso! Redirigiendo al login...");
@@ -118,13 +118,18 @@ export default function RegisterPage() {
     }
   };
 
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+    <div className="relative flex min-h-screen items-center justify-center bg-black px-4 overflow-hidden">
+      {/* Meteoros con mejor configuración */}
+      <div className="absolute inset-0 overflow-hidden">
+        <Meteors />
+      </div>
+      
+      {/* Formulario con fondo semi-transparente */}
       <form
         ref={formRef}
         onSubmit={handleSubmit}
-        className="form-element w-full max-w-md bg-white rounded-md p-6 shadow-md mx-auto"
+        className="form-element relative z-10 w-full max-w-md bg-white/90 backdrop-blur-sm rounded-xl p-8 shadow-xl mx-auto border border-orange-200"
       >
         <h2 className="form-element text-center text-2xl font-semibold text-orange-500 mb-6">
           Registrarse
@@ -194,10 +199,14 @@ export default function RegisterPage() {
         </div>
 
         {error && (
-          <p className="form-element mb-4 text-center text-red-600 font-semibold">{error}</p>
+          <p className="form-element mb-4 text-center text-red-600 font-semibold">
+            {error}
+          </p>
         )}
         {success && (
-          <p className="form-element mb-4 text-center text-green-600 font-semibold">{success}</p>
+          <p className="form-element mb-4 text-center text-green-600 font-semibold">
+            {success}
+          </p>
         )}
 
         <button

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Globe } from "@/components/magicui/globe";
 import { FaEnvelope, FaLock } from 'react-icons/fa';
 import { login } from "@/services/auth_tew";
+import { useAuth } from "@/context/AuthContext"; // ✅ importar el contexto
 import Link from 'next/link';
 
 export default function LoginPage() {
@@ -13,6 +14,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const { login: loginContext } = useAuth(); // ✅ usar el login del contexto
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -22,8 +24,10 @@ export default function LoginPage() {
     try {
       const response = await login(email, password);
 
-      console.log("Usuario autenticado:", response);
+      // ✅ Usar el login del contexto para actualizar el estado global
+      loginContext(response.access_token, response.user);
 
+      // ✅ Redirigir después de actualizar el contexto
       router.push("/");
     } catch (err: any) {
       console.error("Error de autenticación:", err);
@@ -79,12 +83,10 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* Botón de inicio de sesión */}
           <button
             type="submit"
             disabled={loading}
-            className={`bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 rounded-lg transition-colors duration-300 h-12 w-full ${loading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
+            className={`bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 rounded-lg transition-colors duration-300 h-12 w-full ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             {loading ? "Cargando..." : "Iniciar Sesión"}
           </button>
