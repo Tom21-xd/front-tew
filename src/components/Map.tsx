@@ -479,7 +479,7 @@ const Map = ({ className }: MapProps) => {
   }, [geoJsonData, countryGeoJson, hidrografiaGeoJson]);
 
 
-  /*
+  
   useEffect(() => {
     if (!mapRef.current) return;
     const map = mapRef.current;
@@ -587,10 +587,10 @@ const Map = ({ className }: MapProps) => {
       });
     };
   }, [geoJsonData]);
-  */
+
 
   // Leyenda como componente React
-  /*const Legend = () => (
+  const Legend = () => (
     <div
       style={{
         position: "absolute",
@@ -668,7 +668,7 @@ const Map = ({ className }: MapProps) => {
         Clústeres de Aeropuertos
       </div>
     </div>
-  ); */
+  ); 
 
   return (
     <>

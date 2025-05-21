@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+import React, { useState } from "react";
+import axios from "axios";
 
 interface Airport {
   id: string;
@@ -31,6 +33,17 @@ const airports: Airport[] = [
 ];
 
 export default function CardAirports() {
+
+  const [reports, setReports] = useState();
+
+  const getReports = async () =>{
+    try {
+      const response = await axios.get("")
+    } catch (error) {
+      
+    }
+  }
+
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">Información de Aeropuertos</h1>
