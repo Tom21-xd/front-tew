@@ -28,8 +28,6 @@ import {
   MapContainer as LeafletMapContainer,
 } from "react-leaflet";
 
-const TileLayerDynamic = dynamic(() => import("react-leaflet").then((mod) => mod.TileLayer), { ssr: false });
-
 const customIcon = new L.Icon({
   iconUrl: "/img/aeropuerto.png",
   iconSize: [32, 32],
@@ -56,9 +54,11 @@ function MapListener({ onMapReady }: { onMapReady: (map: L.Map) => void }) {
 }
 
 const Map = ({ className }: MapProps) => {
+  const [countryGeoJson, setCountryGeoJson] = useState<any>(null);
   const [geoJsonData, setGeoJsonData] = useState<any>(null);
   const [userPosition, setUserPosition] = useState<L.LatLngExpression | null>(null);
   const [showClusters, setShowClusters] = useState(true);
+  const [hidrografiaGeoJson, setHidrografiaGeoJson] = useState<any>(null);
 
   const mapRef = useRef<L.Map | null>(null);
   //@ts-ignore
@@ -224,8 +224,78 @@ const Map = ({ className }: MapProps) => {
     return markers;
   };
 
+
   useEffect(() => {
-    const fetchAirports = async () => {
+    const fetchData = async () => {
+      try {
+        const [dataOntology, dataGeom] = await Promise.all([
+          fetch("http://localhost:4000/country/getAllContriesSparql").then(res => res.json()),
+          fetch("http://localhost:4000/country/getAllCountries").then(res => res.json()),
+        ]);
+        const combinedFeatures = dataGeom.map((geomFeature: any, idx: number) => {
+          const ontologyData = dataOntology[idx] || {};
+          return {
+            type: "Feature",
+            geometry: geomFeature.geom,
+            properties: {
+              ...ontologyData,
+            },
+          };
+        });
+
+
+        const geoJsonCombined = {
+          type: "FeatureCollection",
+          features: combinedFeatures,
+        };
+
+        setCountryGeoJson(geoJsonCombined);
+
+      } catch (error) {
+        console.error("Error cargando datos combinados:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [dataOntology, dataGeom] = await Promise.all([
+          fetch("http://localhost:4000/hydrography/getAllHydrographySparql").then(res => res.json()),
+          fetch("http://localhost:4000/hydrography/getAllHydrography").then(res => res.json()),
+        ]);
+        const combinedFeatures = dataGeom.map((geomFeature: any, idx: number) => {
+          const ontologyData = dataOntology[idx] || {};
+          return {
+            type: "Feature",
+            geometry: geomFeature.geom,
+            properties: {
+              ...ontologyData,
+            },
+          };
+        });
+
+
+        const geoJsonCombined = {
+          type: "FeatureCollection",
+          features: combinedFeatures,
+        };
+
+        setHidrografiaGeoJson(geoJsonCombined);
+
+      } catch (error) {
+        console.error("Error cargando datos combinados:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    /*const fetchAirports = async () => {
       try {
         const data = await getAirports();
         if (data.type === "FeatureCollection") {
@@ -241,6 +311,37 @@ const Map = ({ className }: MapProps) => {
         console.error("Error al cargar aeropuertos:", error);
       }
     };
+    */
+
+    const fetchAirports = async () => {
+      try {
+        const response = await fetch("http://localhost:4000/layers/airports/getAllAirportsSparql");
+        const data = await response.json();
+
+        const features = data.map((airport: any) => ({
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: [airport.longitude, airport.latitude],
+          },
+          properties: {
+            id: airport.id,
+            name: airport.name,
+            location: airport.location,
+            type: airport.type,
+            iata_code: airport.iataCode,
+          },
+        }));
+
+        setGeoJsonData({
+          type: "FeatureCollection",
+          features,
+        });
+      } catch (error) {
+        console.error("Error al cargar aeropuertos:", error);
+      }
+
+    }
     fetchAirports();
   }, []);
 
@@ -248,6 +349,143 @@ const Map = ({ className }: MapProps) => {
     if (!mapRef.current) return;
     const map = mapRef.current;
 
+    //@ts-ignore
+    const baseLayers = {
+      "OpenStreetMap": L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }),
+      "Google": L.tileLayer("https://mt0.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", {
+        attribution: "&copy; Google",
+      }),
+    };
+
+    //@ts-ignore
+    const overlays: Record<string, any> = {
+      // No WMS, las capas vectoriales combinadas abajo
+      //@ts-ignore
+      "Aeropuertos (Clusters)": L.markerClusterGroup({
+        zIndexOffset: -1000,
+      }),
+    };
+
+    baseLayers["OpenStreetMap"].addTo(map);
+
+    if (markerClusterGroupRef.current) {
+      markerClusterGroupRef.current.clearLayers();
+      map.removeLayer(markerClusterGroupRef.current);
+      markerClusterGroupRef.current = null;
+    }
+
+    if (!geoJsonData) return;
+
+    // Crea capa GeoJSON para países
+    const countryLayer = countryGeoJson
+      ? L.geoJSON(countryGeoJson, {
+        style: {
+          color: "#3388ff",
+          weight: 2,
+          opacity: 1,
+          fillOpacity: 0.3,
+        },
+        onEachFeature: (feature, layer) => {
+          const props = feature.properties;
+          let popupContent = `<b>${props.name || "País"}</b><br/>` +
+            `Población: ${props.population || "N/A"}<br/>` +
+            `Continente: ${props.continent || "N/A"}<br/>` +
+            `Área: ${props.area || "N/A"} km²`;
+          layer.bindPopup(popupContent);
+        },
+      })
+      : null;
+
+    const hidrografiaLayer = hidrografiaGeoJson
+      ? L.geoJSON(hidrografiaGeoJson, {
+        style: {
+          color: "#1f78b4",
+          weight: 2,
+          opacity: 1,
+          fillOpacity: 0.4,
+        },
+        onEachFeature: (feature, layer) => {
+          const props = feature.properties;
+          let popupContent = `<b>${props.name || "Hidrografía"}</b><br/>` +
+            `Tipo: ${props.type || "N/A"}<br/>` +
+            `Descripción: ${props.description || "N/A"}`;
+          layer.bindPopup(popupContent);
+        },
+      })
+      : null;
+
+    // Añadir estas capas a overlays para control de capas
+    if (countryLayer) overlays["Países (Vector)"] = countryLayer;
+    if (hidrografiaLayer) overlays["Hidrografía (Vector)"] = hidrografiaLayer;
+
+    // Añadir capa aeropuertos con clusters y búsqueda
+    const searchLayer = L.layerGroup();
+
+    const markers = createMarkers();
+
+    markers.forEach(marker => {
+      overlays["Aeropuertos (Clusters)"].addLayer(marker);
+      searchLayer.addLayer(marker);
+    });
+
+    overlays["Aeropuertos (Clusters)"].addTo(map);
+    searchLayer.addTo(map);
+
+    //@ts-ignore
+    const searchControl = new L.Control.Search({
+      layer: searchLayer,
+      propertyName: "title",
+      zoom: 12,
+      marker: false,
+      textPlaceholder: "Buscar aeropuerto...",
+    });
+    map.addControl(searchControl);
+
+    // Añadir control de capas
+    const control = L.control.layers(baseLayers, overlays, { collapsed: false }).addTo(map);
+
+    // Añadir las capas vectoriales al mapa por defecto (opcional)
+    if (countryLayer) countryLayer.addTo(map);
+    if (hidrografiaLayer) hidrografiaLayer.addTo(map);
+
+    map.on("overlayadd", (e: any) => {
+      if (e.name === "Aeropuertos (Clusters)") {
+        //@ts-ignore
+        setShowClusters(true);
+      }
+    });
+    map.on("overlayremove", (e: any) => {
+      if (e.name === "Aeropuertos (Clusters)") {
+        //@ts-ignore
+        setShowClusters(false);
+      }
+    });
+
+    mapRef.current = map;
+
+    return () => {
+      map.removeControl(searchControl);
+      control.remove();
+      if (countryLayer) countryLayer.remove();
+      if (hidrografiaLayer) hidrografiaLayer.remove();
+      Object.values(overlays).forEach(layer => {
+        if (map.hasLayer(layer)) map.removeLayer(layer);
+      });
+      Object.values(baseLayers).forEach(layer => {
+        if (map.hasLayer(layer)) map.removeLayer(layer);
+      });
+    };
+  }, [geoJsonData, countryGeoJson, hidrografiaGeoJson]);
+
+
+  /*
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const map = mapRef.current;
+
+    console.log(countryGeoJson);
     //@ts-ignore
     const baseLayers = {
       "OpenStreetMap": L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -350,9 +588,10 @@ const Map = ({ className }: MapProps) => {
       });
     };
   }, [geoJsonData]);
+  */
 
   // Leyenda como componente React
-  const Legend = () => (
+  /*const Legend = () => (
     <div
       style={{
         position: "absolute",
@@ -430,11 +669,11 @@ const Map = ({ className }: MapProps) => {
         Clústeres de Aeropuertos
       </div>
     </div>
-  );
+  ); */
 
   return (
     <>
-      <Legend />
+      {/*<Legend />*/}
       <button
         onClick={requestUserLocation}
         style={{
@@ -452,7 +691,7 @@ const Map = ({ className }: MapProps) => {
         <img src="/img/gps.png" alt="ubicacion" className="size-8" />
       </button>
 
-    
+
       <LeafletMapContainer
         center={[1.7572, -75.5906]}
         zoom={6}

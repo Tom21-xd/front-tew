@@ -6,6 +6,7 @@ import Map from "@/components/Map";
 import Script from "next/script";
 
 export default function Home() {
+  
   return (
     <>
       <link
@@ -17,7 +18,6 @@ export default function Home() {
         src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"
         strategy="afterInteractive"
         onLoad={() => {
-          console.log("Leaflet Routing Machine cargado");
         }}
       />
       <main className="relative flex items-center justify-center h-full w-full bg-black overflow-hidden">

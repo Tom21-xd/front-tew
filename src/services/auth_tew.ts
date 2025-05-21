@@ -9,11 +9,22 @@ export const login = async (correo_usuario: string, contrasenia_usuario: string)
       correo_usuario,
       contrasenia_usuario,
     });
-    console.log(response);
     return response.data;
   } catch (error: any) {
     console.error("Error en el inicio de sesión:", error);
     throw error.response?.data || error.message;
   }
 };
+
+export const isAuthenticated = () => {
+  if (typeof window === "undefined") return false;
+  const token = localStorage.getItem("token");
+  return !!token;
+};
+
+export const logout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+};
+
 
