@@ -233,7 +233,7 @@ const Map = ({ className }: MapProps) => {
           fetch("https://vkcr9k49-4000.use.devtunnels.ms/country/getAllCountries").then(res => res.json()),
         ]);
         const combinedFeatures = dataGeom.map((geomFeature: any, idx: number) => {
-          const ontologyData = dataOntology[idx] || {};
+          const ontologyData = dataOntology.find((o: any) => o.name === geomFeature.name) || {};
           return {
             type: "Feature",
             geometry: geomFeature.geom,
@@ -268,7 +268,7 @@ const Map = ({ className }: MapProps) => {
           fetch("https://vkcr9k49-4000.use.devtunnels.ms/hydrography/getAllHydrography").then(res => res.json()),
         ]);
         const combinedFeatures = dataGeom.map((geomFeature: any, idx: number) => {
-          const ontologyData = dataOntology[idx] || {};
+          const ontologyData = dataOntology.find((o: any) => o.name === geomFeature.nombre) || {};
           return {
             type: "Feature",
             geometry: geomFeature.geom,
@@ -434,7 +434,7 @@ const Map = ({ className }: MapProps) => {
 
     //@ts-ignore
     const searchControl = new L.Control.Search({
-      layer: searchLayer,
+      layer: overlays["Aeropuertos (Clusters)"],
       propertyName: "title",
       zoom: 12,
       marker: false,
@@ -677,8 +677,8 @@ const Map = ({ className }: MapProps) => {
         onClick={requestUserLocation}
         style={{
           position: "absolute",
-          top: 200,
-          right: 852,
+          top: '50%',
+          right: '92%',
           zIndex: 1000,
           backgroundColor: "white",
           borderRadius: "4px",
