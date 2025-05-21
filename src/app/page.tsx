@@ -2,8 +2,11 @@
 
 import { cn } from "@/lib/utils";
 import { InteractiveGridPattern } from "@/components/magicui/interactive-grid-pattern";
-import Map from "@/components/Map";
 import Script from "next/script";
+import dynamic from "next/dynamic";
+
+const MapNoSSR = dynamic(() => import('@/components/Map'), { ssr: false });
+
 
 export default function Home() {
   
@@ -32,7 +35,7 @@ export default function Home() {
           squaresClassName="hover:fill-blue-500"
         />
         <div className="relative z-10 w-full max-w-4xl h-full flex items-center justify-center">
-          <Map className="w-full h-[500px] max-h-full" />
+          <MapNoSSR className="w-full h-[500px] max-h-full" />
         </div>
       </main>
 
