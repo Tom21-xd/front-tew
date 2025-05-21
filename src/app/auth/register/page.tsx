@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FaUser, FaEnvelope, FaLock, FaPhone } from "react-icons/fa";
+import axios from "axios";
 import gsap from "gsap";
 
 export default function RegisterPage() {
@@ -79,21 +80,6 @@ export default function RegisterPage() {
     setError("");
     setSuccess("");
 
-    // Animación pulso botón al hacer click
-    if (buttonRef.current) {
-      gsap.fromTo(
-        buttonRef.current,
-        { scale: 1 },
-        {
-          scale: 1.1,
-          duration: 0.15,
-          yoyo: true,
-          repeat: 1,
-          ease: "power1.inOut",
-        }
-      );
-    }
-
     if (
       !formData.nombre_usuario ||
       !formData.correo_usuario ||
@@ -105,27 +91,33 @@ export default function RegisterPage() {
     }
 
     try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      // Envía sólo los campos que tu backend espera recibir
+      const postData = {
+        nombre_usuario: formData.nombre_usuario,
+        correo_usuario: formData.correo_usuario,
+        contrasenia_usuario: formData.contrasenia_usuario,
+        telefono_usuario: formData.telefono_usuario || null,
+      };
 
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.message || "Error en el registro");
-        setLoading(false);
-        return;
+      const response = await axios.post('http://localhost:4000/auth/register', postData);
+
+      if (response.status === 201 || response.status === 200) {
+        setSuccess("Registro exitoso! Redirigiendo al login...");
+        setTimeout(() => router.push("/auth/login"), 2000);
+      } else {
+        setError("Error en el registro. Intenta nuevamente.");
       }
-
-      setSuccess("Registro exitoso! Redirigiendo al login...");
-      setTimeout(() => router.push("/auth/login"), 2000);
-    } catch {
-      setError("Error de conexión. Intenta nuevamente.");
+    } catch (err: any) {
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError("Error de conexión. Intenta nuevamente.");
+      }
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
@@ -212,11 +204,10 @@ export default function RegisterPage() {
           ref={buttonRef}
           type="submit"
           disabled={loading}
-          className={`form-element w-full py-3 rounded-md text-white font-semibold transition-colors duration-300 ${
-            loading
+          className={`form-element w-full py-3 rounded-md text-white font-semibold transition-colors duration-300 ${loading
               ? "bg-orange-300 cursor-not-allowed"
               : "bg-orange-500 hover:bg-orange-600"
-          }`}
+            }`}
         >
           {loading ? "Registrando..." : "Registrarse"}
         </button>

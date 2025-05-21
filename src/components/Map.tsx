@@ -8,7 +8,6 @@ import { getAirports } from "@/services/airports_tew";
 import L from "leaflet";
 import ReactDOM from "react-dom/client";
 
-
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import 'leaflet-routing-machine';
 
@@ -167,7 +166,7 @@ const Map = ({ className }: MapProps) => {
         const root = ReactDOM.createRoot(popupContainer);
 
         root.render(
-          <div style={{ maxWidth: "200px" }}>
+          <div style={{ maxWidth: "300px" }}>
             <h3 style={{ fontWeight: "bold", marginBottom: "4px" }}>
               {feature.properties.name || "Aeropuerto"}
             </h3>
@@ -245,7 +244,6 @@ const Map = ({ className }: MapProps) => {
     fetchAirports();
   }, []);
 
-
   useEffect(() => {
     if (!mapRef.current) return;
     const map = mapRef.current;
@@ -317,9 +315,9 @@ const Map = ({ className }: MapProps) => {
     //@ts-ignore
     const searchControl = new L.Control.Search({
       layer: searchLayer,
-      propertyName: "title", // importante que el título esté en options.title del marker
+      propertyName: "title",
       zoom: 12,
-      marker: false, // para no duplicar marcador al buscar
+      marker: false,
       textPlaceholder: "Buscar aeropuerto...",
     });
     map.addControl(searchControl);
@@ -353,9 +351,90 @@ const Map = ({ className }: MapProps) => {
     };
   }, [geoJsonData]);
 
+  // Leyenda como componente React
+  const Legend = () => (
+    <div
+      style={{
+        position: "absolute",
+        top: 240,
+        right: 852,
+        zIndex: 1000,
+        backgroundColor: "white",
+        padding: "6px 8px",
+        borderRadius: 5,
+        boxShadow: "0 0 15px rgba(0,0,0,0.2)",
+        fontSize: 14,
+        width: 180,
+        userSelect: "none",
+      }}
+      className="info legend"
+    >
+      <div>
+        <i
+          style={{
+            background: "#6FA1EC",
+            width: 18,
+            height: 18,
+            float: "left",
+            marginRight: 8,
+            opacity: 0.9,
+          }}
+        />
+        Ruta trazada
+      </div>
+      <div>
+        <i
+          style={{
+            backgroundImage: "url(/img/aeropuerto.png)",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center center",
+            backgroundSize: "contain",
+            width: 18,
+            height: 18,
+            display: "inline-block",
+            marginRight: 8,
+            float: "left",
+            opacity: 0.9,
+          }}
+        />
+        Aeropuertos
+      </div>
+      <div>
+        <i style={{ background: "#1f78b4", width: 18, height: 18, float: "left", marginRight: 8, opacity: 0.9 }} />
+        Hidrografía
+      </div>
+      <div>
+        <i style={{ background: "#33a02c", width: 18, height: 18, float: "left", marginRight: 8, opacity: 0.9 }} />
+        Países
+      </div>
+      <div>
+        <i style={{ background: "#fb9a99", width: 18, height: 18, float: "left", marginRight: 8, opacity: 0.9 }} />
+        Departamentos
+      </div>
+      <div>
+        <i style={{ background: "#e31a1c", width: 18, height: 18, float: "left", marginRight: 8, opacity: 0.9 }} />
+        Ciudades
+      </div>
+      <div>
+        <i
+          style={{
+            background: "rgba(255, 165, 0, 0.6)",
+            border: "1px solid #FFA500",
+            width: 18,
+            height: 18,
+            float: "left",
+            marginRight: 8,
+            opacity: 0.9,
+          }}
+        />
+        Clústeres de Aeropuertos
+      </div>
+    </div>
+  );
 
   return (
     <>
+      <Legend />
       <button
         onClick={requestUserLocation}
         style={{
@@ -373,11 +452,12 @@ const Map = ({ className }: MapProps) => {
         <img src="/img/gps.png" alt="ubicacion" className="size-8" />
       </button>
 
+    
       <LeafletMapContainer
         center={[1.7572, -75.5906]}
         zoom={6}
         scrollWheelZoom={true}
-        className={cn("w-full h-[500px] rounded-lg shadow-md", className)}
+        className={cn("w-full h-[600px] rounded-lg shadow-md", className)}
       >
         <MiniMapControl />
         <FullscreenControl />

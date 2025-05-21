@@ -2,10 +2,11 @@ import Link from "next/link";
 
 const links = [
   { name: "Inicio", href: "/" },
-  { name: "dashboard", href: "/viajes" },
+  { name: "dashboard", href: "/reports" },
 ];
 
 export default function Header() {
+  
   return (
     <header>
       <div className="flex items-center justify-between p-4 bg-gray-500">
