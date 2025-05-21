@@ -229,8 +229,8 @@ const Map = ({ className }: MapProps) => {
     const fetchData = async () => {
       try {
         const [dataOntology, dataGeom] = await Promise.all([
-          fetch("http://localhost:4000/country/getAllContriesSparql").then(res => res.json()),
-          fetch("http://localhost:4000/country/getAllCountries").then(res => res.json()),
+          fetch("https://vkcr9k49-4000.use.devtunnels.ms/country/getAllContriesSparql").then(res => res.json()),
+          fetch("https://vkcr9k49-4000.use.devtunnels.ms/country/getAllCountries").then(res => res.json()),
         ]);
         const combinedFeatures = dataGeom.map((geomFeature: any, idx: number) => {
           const ontologyData = dataOntology[idx] || {};
@@ -264,8 +264,8 @@ const Map = ({ className }: MapProps) => {
     const fetchData = async () => {
       try {
         const [dataOntology, dataGeom] = await Promise.all([
-          fetch("http://localhost:4000/hydrography/getAllHydrographySparql").then(res => res.json()),
-          fetch("http://localhost:4000/hydrography/getAllHydrography").then(res => res.json()),
+          fetch("https://vkcr9k49-4000.use.devtunnels.ms/hydrography/getAllHydrographySparql").then(res => res.json()),
+          fetch("https://vkcr9k49-4000.use.devtunnels.ms/hydrography/getAllHydrography").then(res => res.json()),
         ]);
         const combinedFeatures = dataGeom.map((geomFeature: any, idx: number) => {
           const ontologyData = dataOntology[idx] || {};
@@ -315,7 +315,7 @@ const Map = ({ className }: MapProps) => {
 
     const fetchAirports = async () => {
       try {
-        const response = await fetch("http://localhost:4000/layers/airports/getAllAirportsSparql");
+        const response = await fetch("https://vkcr9k49-4000.use.devtunnels.ms/layers/airports/getAllAirportsSparql");
         const data = await response.json();
 
         const features = data.map((airport: any) => ({
