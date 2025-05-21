@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import url(/src/lib/Leaflet-MiniMap-3.6.1/src/Control.MiniMap.css);
 
 @custom-variant dark (&:is(.dark *));
 

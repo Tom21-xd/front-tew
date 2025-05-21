@@ -4,11 +4,22 @@ import { cn } from "@/lib/utils";
 import { InteractiveGridPattern } from "@/components/magicui/interactive-grid-pattern";
 import Map from "@/components/Map";
 import Script from "next/script";
-import '../lib/Leaflet-MiniMap-3.6.1/src/Control.MiniMap.css';
 
 export default function Home() {
   return (
     <>
+      <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css"
+      />
+
+      <Script
+        src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"
+        strategy="afterInteractive"
+        onLoad={() => {
+          console.log("Leaflet Routing Machine cargado");
+        }}
+      />
       <main className="relative flex items-center justify-center h-full w-full bg-black overflow-hidden">
         <InteractiveGridPattern
           className={cn(
@@ -25,11 +36,6 @@ export default function Home() {
         </div>
       </main>
 
-      <Script
-        src="/plugins/leaflet-minimap/Control.MiniMap.js"
-        strategy="beforeInteractive"
-        onError={() => console.error('Error cargando Leaflet MiniMap JS')}
-      />
     </>
   );
 }
