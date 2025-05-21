@@ -1,16 +1,16 @@
-// app/page.tsx (Next.js 13+ ruta raíz)
+import React from 'react';
+import CardAirports from '@/components/reports/CardAirports';
+import OptionAirports from '@/components/reports/OptionAirports';
 
-export default function HomePage() {
-  return (
-    <main style={{ 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center', 
-      height: '100vh',
-      fontSize: '2rem',
-      fontWeight: 'bold'
-    }}>
-      Hola Mundo
-    </main>
-  );
+export default function Page(){
+    return(
+        <div className="flex flex-col h-screen overflow-auto pt-16 pb-8">
+            <div className="flex-none">
+                <OptionAirports />
+            </div>
+            <div className="flex-grow overflow-auto">
+                <CardAirports />
+            </div>
+        </div>
+    )
 }
