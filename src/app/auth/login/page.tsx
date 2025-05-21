@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Globe } from "@/components/magicui/globe";
 import { FaEnvelope, FaLock } from 'react-icons/fa';
 import { login } from "@/services/auth_tew";
+import { useAuth } from "@/context/AuthContext"; // ✅ importar el contexto
 import Link from 'next/link';
 
 export default function LoginPage() {
@@ -13,6 +14,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const { login: loginContext } = useAuth(); // ✅ usar el login del contexto
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -22,11 +24,11 @@ export default function LoginPage() {
     try {
       const response = await login(email, password);
 
-      // Aquí puedes manejar el almacenamiento del token si tu backend lo envía
-      console.log("Usuario autenticado:", response);
+      // ✅ Usar el login del contexto para actualizar el estado global
+      loginContext(response.access_token, response.user);
 
-      // Redirige al usuario a la página de inicio
-      router.push("/dashboard");
+      // ✅ Redirigir después de actualizar el contexto
+      router.push("/");
     } catch (err: any) {
       console.error("Error de autenticación:", err);
       setError(err.message || "Error al iniciar sesión");
@@ -51,7 +53,6 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col space-y-6 w-full">
-          {/* Campo de correo electrónico con ícono */}
           <div className="relative">
             <input
               type="email"
@@ -64,7 +65,6 @@ export default function LoginPage() {
             <FaEnvelope className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
           </div>
 
-          {/* Campo de contraseña con ícono */}
           <div className="relative">
             <input
               type="password"
@@ -77,19 +77,16 @@ export default function LoginPage() {
             <FaLock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
           </div>
 
-          {/* Mensaje de error */}
           {error && (
             <div className="text-red-500 text-center">
               {error}
             </div>
           )}
 
-          {/* Botón de inicio de sesión */}
           <button
             type="submit"
             disabled={loading}
-            className={`bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 rounded-lg transition-colors duration-300 h-12 w-full ${loading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
+            className={`bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 rounded-lg transition-colors duration-300 h-12 w-full ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             {loading ? "Cargando..." : "Iniciar Sesión"}
           </button>

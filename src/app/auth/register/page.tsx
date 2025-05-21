@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FaUser, FaEnvelope, FaLock, FaPhone } from "react-icons/fa";
+import axios from "axios";
 import gsap from "gsap";
+import { Meteors } from "@/components/magicui/meteors";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -21,7 +23,6 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Animación inicial de aparición (form y sus elementos)
   useEffect(() => {
     if (formRef.current) {
       const ctx = gsap.context(() => {
@@ -37,7 +38,6 @@ export default function RegisterPage() {
     }
   }, []);
 
-  // Animación foco inputs (borde + icono)
   useEffect(() => {
     inputRefs.current.forEach((input) => {
       if (!input) return;
@@ -61,7 +61,6 @@ export default function RegisterPage() {
       input.addEventListener("focus", handleFocus);
       input.addEventListener("blur", handleBlur);
 
-      // Cleanup listeners on unmount
       return () => {
         input.removeEventListener("focus", handleFocus);
         input.removeEventListener("blur", handleBlur);
@@ -79,21 +78,6 @@ export default function RegisterPage() {
     setError("");
     setSuccess("");
 
-    // Animación pulso botón al hacer click
-    if (buttonRef.current) {
-      gsap.fromTo(
-        buttonRef.current,
-        { scale: 1 },
-        {
-          scale: 1.1,
-          duration: 0.15,
-          yoyo: true,
-          repeat: 1,
-          ease: "power1.inOut",
-        }
-      );
-    }
-
     if (
       !formData.nombre_usuario ||
       !formData.correo_usuario ||
@@ -105,34 +89,47 @@ export default function RegisterPage() {
     }
 
     try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const postData = {
+        nombre_usuario: formData.nombre_usuario,
+        correo_usuario: formData.correo_usuario,
+        contrasenia_usuario: formData.contrasenia_usuario,
+        telefono_usuario: formData.telefono_usuario || null,
+      };
 
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.message || "Error en el registro");
-        setLoading(false);
-        return;
+      const response = await axios.post(
+        "http://localhost:4000/auth/register",
+        postData
+      );
+
+      if (response.status === 201 || response.status === 200) {
+        setSuccess("Registro exitoso! Redirigiendo al login...");
+        setTimeout(() => router.push("/auth/login"), 2000);
+      } else {
+        setError("Error en el registro. Intenta nuevamente.");
       }
-
-      setSuccess("Registro exitoso! Redirigiendo al login...");
-      setTimeout(() => router.push("/auth/login"), 2000);
-    } catch {
-      setError("Error de conexión. Intenta nuevamente.");
+    } catch (err: any) {
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError("Error de conexión. Intenta nuevamente.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+    <div className="relative flex min-h-screen items-center justify-center bg-black px-4 overflow-hidden">
+      {/* Meteoros con mejor configuración */}
+      <div className="absolute inset-0 overflow-hidden">
+        <Meteors />
+      </div>
+      
+      {/* Formulario con fondo semi-transparente */}
       <form
         ref={formRef}
         onSubmit={handleSubmit}
-        className="form-element w-full max-w-md bg-white rounded-md p-6 shadow-md mx-auto"
+        className="form-element relative z-10 w-full max-w-md bg-white/90 backdrop-blur-sm rounded-xl p-8 shadow-xl mx-auto border border-orange-200"
       >
         <h2 className="form-element text-center text-2xl font-semibold text-orange-500 mb-6">
           Registrarse
@@ -202,21 +199,24 @@ export default function RegisterPage() {
         </div>
 
         {error && (
-          <p className="form-element mb-4 text-center text-red-600 font-semibold">{error}</p>
+          <p className="form-element mb-4 text-center text-red-600 font-semibold">
+            {error}
+          </p>
         )}
         {success && (
-          <p className="form-element mb-4 text-center text-green-600 font-semibold">{success}</p>
+          <p className="form-element mb-4 text-center text-green-600 font-semibold">
+            {success}
+          </p>
         )}
 
         <button
           ref={buttonRef}
           type="submit"
           disabled={loading}
-          className={`form-element w-full py-3 rounded-md text-white font-semibold transition-colors duration-300 ${
-            loading
+          className={`form-element w-full py-3 rounded-md text-white font-semibold transition-colors duration-300 ${loading
               ? "bg-orange-300 cursor-not-allowed"
               : "bg-orange-500 hover:bg-orange-600"
-          }`}
+            }`}
         >
           {loading ? "Registrando..." : "Registrarse"}
         </button>

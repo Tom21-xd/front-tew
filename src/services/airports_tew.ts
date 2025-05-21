@@ -17,13 +17,10 @@ export const getAirports = async (
       ...additionalParams,
     };
 
-    // Log para verificar URL completa con params
     const urlParams = new URLSearchParams(params).toString();
-    console.log("GeoServer WFS URL:", `${GEOSERVER_BASE_URL}?${urlParams}`);
 
     const response = await axios.get(GEOSERVER_BASE_URL, { params });
 
-    // Revisa status y contenido para asegurarte que es correcto
     if (response.status !== 200) {
       throw new Error(`GeoServer responded with status ${response.status}`);
     }
