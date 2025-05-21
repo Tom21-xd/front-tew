@@ -35,7 +35,7 @@ export default function Home() {
           squaresClassName="hover:fill-blue-500"
         />
         <div className="relative z-10 w-full max-w-4xl h-full flex items-center justify-center">
-          <MapNoSSR className="w-full h-[500px] max-h-full" />
+          <MapNoSSR className="w-full h-[90%] max-h-full" />
         </div>
       </main>
 
