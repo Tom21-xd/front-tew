@@ -431,7 +431,6 @@ const Map = ({ className }: MapProps) => {
     });
 
     overlays["Aeropuertos (Clusters)"].addTo(map);
-    searchLayer.addTo(map);
 
     //@ts-ignore
     const searchControl = new L.Control.Search({
