@@ -22,7 +22,7 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Animación inicial de aparición (form y sus elementos)
+
   useEffect(() => {
     if (formRef.current) {
       const ctx = gsap.context(() => {
@@ -38,7 +38,7 @@ export default function RegisterPage() {
     }
   }, []);
 
-  // Animación foco inputs (borde + icono)
+  
   useEffect(() => {
     inputRefs.current.forEach((input) => {
       if (!input) return;

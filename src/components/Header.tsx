@@ -2,7 +2,7 @@ import Link from "next/link";
 
 const links = [
   { name: "Inicio", href: "/" },
-  { name: "dashboard", href: "/reports" },
+  { name: "reports", href: "/reports" },
 ];
 
 export default function Header() {
